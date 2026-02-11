@@ -1,0 +1,479 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum Role {
+  OPERADORA
+  GERENTE
+  FRANQUEADOR
+}
+
+enum StatusMovimento {
+  ABERTO
+  FECHADO
+}
+
+enum TipoOperacao {
+  ABERTURA
+  SANGRIA
+  SUPRIMENTO
+  FECHAMENTO
+}
+
+enum TipoPagamento {
+  DINHEIRO
+  CREDITO
+  DEBITO
+  PIX
+  VOUCHER
+}
+
+enum StatusVenda {
+  CONCLUIDA
+  CANCELADA
+}
+
+enum StatusPedidoCompra {
+  RASCUNHO
+  ENVIADO
+  RECEBIDO
+  CANCELADO
+}
+
+enum StatusNota {
+  PENDENTE
+  EMITIDA
+  CANCELADA
+  REJEITADA
+}
+
+enum UnidadeProduto {
+  UN
+  KG
+  G
+  L
+  ML
+  PCT
+}
+
+// ─── Core ─────────────────────────────────────────────────
+
+model Empresa {
+  id        String   @id @default(uuid())
+  nome      String
+  cnpj      String   @unique
+  telefone  String?
+  email     String?
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  usuarios          Usuario[]
+  terminais         Terminal[]
+  movimentos        Movimento[]
+  vendas            Venda[]
+  produtos          Produto[]
+  entradasEstoque   EntradaEstoque[]
+  saidasEstoque     SaidaEstoque[]
+  pedidosCompra     PedidoCompra[]
+  notasFiscais      NotaFiscal[]
+  fornecedores      Fornecedor[]
+  clientes          Cliente[]
+  comissoesConfig   ComissaoConfig[]
+  tabelasPreco      TabelaPreco[]
+  shoppings         Shopping[]
+  campanhasShopping CampanhaShopping[]
+
+  @@map("empresas")
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  role      Role     @default(OPERADORA)
+  ativo     Boolean  @default(true)
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa    Empresa     @relation(fields: [empresaId], references: [id])
+  movimentos Movimento[]
+  vendas     Venda[]
+
+  @@map("usuarios")
+}
+
+model Terminal {
+  id        String   @id @default(uuid())
+  nome      String
+  codigo    String   @unique
+  ativo     Boolean  @default(true)
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa    Empresa     @relation(fields: [empresaId], references: [id])
+  movimentos Movimento[]
+  vendas     Venda[]
+
+  @@map("terminais")
+}
+
+// ─── Caixa ────────────────────────────────────────────────
+
+model Movimento {
+  id              String          @id @default(uuid())
+  status          StatusMovimento @default(ABERTO)
+  valorAbertura   Decimal         @map("valor_abertura") @db.Decimal(12, 2)
+  valorFechamento Decimal?        @map("valor_fechamento") @db.Decimal(12, 2)
+  dataAbertura    DateTime        @default(now()) @map("data_abertura")
+  dataFechamento  DateTime?       @map("data_fechamento")
+  observacao      String?
+  empresaId       String          @map("empresa_id")
+  usuarioId       String          @map("usuario_id")
+  terminalId      String          @map("terminal_id")
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  empresa   Empresa             @relation(fields: [empresaId], references: [id])
+  usuario   Usuario             @relation(fields: [usuarioId], references: [id])
+  terminal  Terminal            @relation(fields: [terminalId], references: [id])
+  operacoes MovimentoOperacao[]
+  vendas    Venda[]
+
+  @@map("movimentos")
+}
+
+model MovimentoOperacao {
+  id          String       @id @default(uuid())
+  tipo        TipoOperacao
+  valor       Decimal      @db.Decimal(12, 2)
+  observacao  String?
+  movimentoId String       @map("movimento_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  movimento Movimento @relation(fields: [movimentoId], references: [id])
+
+  @@map("movimento_operacoes")
+}
+
+// ─── Vendas ───────────────────────────────────────────────
+
+model Venda {
+  id          String      @id @default(uuid())
+  numero      Int
+  status      StatusVenda @default(CONCLUIDA)
+  subtotal    Decimal     @db.Decimal(12, 2)
+  desconto    Decimal     @default(0) @db.Decimal(12, 2)
+  total       Decimal     @db.Decimal(12, 2)
+  empresaId   String      @map("empresa_id")
+  usuarioId   String      @map("usuario_id")
+  terminalId  String      @map("terminal_id")
+  movimentoId String      @map("movimento_id")
+  clienteId   String?     @map("cliente_id")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  empresa     Empresa          @relation(fields: [empresaId], references: [id])
+  usuario     Usuario          @relation(fields: [usuarioId], references: [id])
+  terminal    Terminal         @relation(fields: [terminalId], references: [id])
+  movimento   Movimento        @relation(fields: [movimentoId], references: [id])
+  cliente     Cliente?         @relation(fields: [clienteId], references: [id])
+  itens       VendaItem[]
+  pagamentos  VendaPagamento[]
+  notaFiscal  NotaFiscal?
+  cupons      CupomShopping[]
+
+  @@map("vendas")
+}
+
+model VendaItem {
+  id            String  @id @default(uuid())
+  quantidade    Decimal @db.Decimal(12, 3)
+  precoUnitario Decimal @map("preco_unitario") @db.Decimal(12, 2)
+  subtotal      Decimal @db.Decimal(12, 2)
+  vendaId       String  @map("venda_id")
+  produtoId     String  @map("produto_id")
+
+  venda   Venda   @relation(fields: [vendaId], references: [id])
+  produto Produto @relation(fields: [produtoId], references: [id])
+
+  @@map("venda_itens")
+}
+
+model VendaPagamento {
+  id      String        @id @default(uuid())
+  tipo    TipoPagamento
+  valor   Decimal       @db.Decimal(12, 2)
+  vendaId String        @map("venda_id")
+
+  venda Venda @relation(fields: [vendaId], references: [id])
+
+  @@map("venda_pagamentos")
+}
+
+// ─── Estoque ──────────────────────────────────────────────
+
+model Produto {
+  id            String         @id @default(uuid())
+  nome          String
+  codigo        String         @unique
+  unidade       UnidadeProduto @default(UN)
+  precoVenda    Decimal        @map("preco_venda") @db.Decimal(12, 2)
+  precoCusto    Decimal?       @map("preco_custo") @db.Decimal(12, 2)
+  estoqueAtual  Decimal        @default(0) @map("estoque_atual") @db.Decimal(12, 3)
+  estoqueMinimo Decimal?       @default(0) @map("estoque_minimo") @db.Decimal(12, 3)
+  ativo         Boolean        @default(true)
+  empresaId     String         @map("empresa_id")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  empresa           Empresa            @relation(fields: [empresaId], references: [id])
+  vendaItens        VendaItem[]
+  entradaItens      EntradaItem[]
+  saidaItens        SaidaItem[]
+  pedidoCompraItens PedidoCompraItem[]
+  tabelaPrecoItens  TabelaPrecoItem[]
+
+  @@map("produtos")
+}
+
+model EntradaEstoque {
+  id            String   @id @default(uuid())
+  numeroNota    String?  @map("numero_nota")
+  observacao    String?
+  empresaId     String   @map("empresa_id")
+  fornecedorId  String?  @map("fornecedor_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  empresa    Empresa       @relation(fields: [empresaId], references: [id])
+  fornecedor Fornecedor?   @relation(fields: [fornecedorId], references: [id])
+  itens      EntradaItem[]
+
+  @@map("entradas_estoque")
+}
+
+model EntradaItem {
+  id              String  @id @default(uuid())
+  quantidade      Decimal @db.Decimal(12, 3)
+  precoUnitario   Decimal @map("preco_unitario") @db.Decimal(12, 2)
+  entradaEstoqueId String @map("entrada_estoque_id")
+  produtoId       String  @map("produto_id")
+
+  entradaEstoque EntradaEstoque @relation(fields: [entradaEstoqueId], references: [id])
+  produto        Produto        @relation(fields: [produtoId], references: [id])
+
+  @@map("entrada_itens")
+}
+
+model SaidaEstoque {
+  id         String   @id @default(uuid())
+  motivo     String
+  observacao String?
+  empresaId  String   @map("empresa_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  empresa Empresa     @relation(fields: [empresaId], references: [id])
+  itens   SaidaItem[]
+
+  @@map("saidas_estoque")
+}
+
+model SaidaItem {
+  id            String  @id @default(uuid())
+  quantidade    Decimal @db.Decimal(12, 3)
+  saidaEstoqueId String @map("saida_estoque_id")
+  produtoId     String  @map("produto_id")
+
+  saidaEstoque SaidaEstoque @relation(fields: [saidaEstoqueId], references: [id])
+  produto      Produto      @relation(fields: [produtoId], references: [id])
+
+  @@map("saida_itens")
+}
+
+model PedidoCompra {
+  id            String             @id @default(uuid())
+  status        StatusPedidoCompra @default(RASCUNHO)
+  observacao    String?
+  empresaId     String             @map("empresa_id")
+  fornecedorId  String             @map("fornecedor_id")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  empresa    Empresa            @relation(fields: [empresaId], references: [id])
+  fornecedor Fornecedor         @relation(fields: [fornecedorId], references: [id])
+  itens      PedidoCompraItem[]
+
+  @@map("pedidos_compra")
+}
+
+model PedidoCompraItem {
+  id             String  @id @default(uuid())
+  quantidade     Decimal @db.Decimal(12, 3)
+  precoUnitario  Decimal @map("preco_unitario") @db.Decimal(12, 2)
+  pedidoCompraId String  @map("pedido_compra_id")
+  produtoId      String  @map("produto_id")
+
+  pedidoCompra PedidoCompra @relation(fields: [pedidoCompraId], references: [id])
+  produto      Produto      @relation(fields: [produtoId], references: [id])
+
+  @@map("pedido_compra_itens")
+}
+
+// ─── Fiscal ───────────────────────────────────────────────
+
+model NotaFiscal {
+  id        String     @id @default(uuid())
+  numero    String?
+  serie     String?
+  chave     String?    @unique
+  status    StatusNota @default(PENDENTE)
+  xml       String?
+  empresaId String     @map("empresa_id")
+  vendaId   String     @unique @map("venda_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+  venda   Venda   @relation(fields: [vendaId], references: [id])
+
+  @@map("notas_fiscais")
+}
+
+// ─── Shopping ─────────────────────────────────────────────
+
+model Shopping {
+  id        String   @id @default(uuid())
+  nome      String
+  endereco  String?
+  cidade    String?
+  estado    String?
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa   Empresa            @relation(fields: [empresaId], references: [id])
+  campanhas CampanhaShopping[]
+
+  @@map("shoppings")
+}
+
+model CampanhaShopping {
+  id         String   @id @default(uuid())
+  nome       String
+  descricao  String?
+  dataInicio DateTime @map("data_inicio")
+  dataFim    DateTime @map("data_fim")
+  valorMinimo Decimal @map("valor_minimo") @db.Decimal(12, 2)
+  ativo      Boolean  @default(true)
+  empresaId  String   @map("empresa_id")
+  shoppingId String   @map("shopping_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  empresa  Empresa         @relation(fields: [empresaId], references: [id])
+  shopping Shopping        @relation(fields: [shoppingId], references: [id])
+  cupons   CupomShopping[]
+
+  @@map("campanhas_shopping")
+}
+
+model CupomShopping {
+  id         String   @id @default(uuid())
+  codigo     String   @unique
+  campanhaId String   @map("campanha_id")
+  vendaId    String   @map("venda_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  campanha CampanhaShopping @relation(fields: [campanhaId], references: [id])
+  venda    Venda            @relation(fields: [vendaId], references: [id])
+
+  @@map("cupons_shopping")
+}
+
+// ─── Auxiliares ───────────────────────────────────────────
+
+model Fornecedor {
+  id        String   @id @default(uuid())
+  nome      String
+  cnpj      String?
+  telefone  String?
+  email     String?
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa        Empresa          @relation(fields: [empresaId], references: [id])
+  entradas       EntradaEstoque[]
+  pedidosCompra  PedidoCompra[]
+
+  @@map("fornecedores")
+}
+
+model Cliente {
+  id        String   @id @default(uuid())
+  nome      String
+  cpf       String?  @unique
+  telefone  String?
+  email     String?
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+  vendas  Venda[]
+
+  @@map("clientes")
+}
+
+model ComissaoConfig {
+  id         String  @id @default(uuid())
+  nome       String
+  percentual Decimal @db.Decimal(5, 2)
+  ativo      Boolean @default(true)
+  empresaId  String  @map("empresa_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+
+  @@map("comissoes_config")
+}
+
+model TabelaPreco {
+  id        String   @id @default(uuid())
+  nome      String
+  ativo     Boolean  @default(true)
+  empresaId String   @map("empresa_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa Empresa           @relation(fields: [empresaId], references: [id])
+  itens   TabelaPrecoItem[]
+
+  @@map("tabelas_preco")
+}
+
+model TabelaPrecoItem {
+  id            String  @id @default(uuid())
+  preco         Decimal @db.Decimal(12, 2)
+  tabelaPrecoId String  @map("tabela_preco_id")
+  produtoId     String  @map("produto_id")
+
+  tabelaPreco TabelaPreco @relation(fields: [tabelaPrecoId], references: [id])
+  produto     Produto     @relation(fields: [produtoId], references: [id])
+
+  @@map("tabela_preco_itens")
+}

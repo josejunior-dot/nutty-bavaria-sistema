@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: nutty-bavaria-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nutty
+      POSTGRES_PASSWORD: nutty123
+      POSTGRES_DB: nutty_bavaria
+    volumes:
+      - ./docker-data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nutty -d nutty_bavaria"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

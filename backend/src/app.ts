@@ -23,8 +23,12 @@ export async function buildApp() {
   })
 
   // Plugins
+  const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',')
+    : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3002', 'http://localhost:3003']
+
   await app.register(cors, {
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
   })
 

@@ -1,8 +1,9 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { BarChart3, TrendingUp, Users, Building2, Percent } from "lucide-react"
 import { toast } from "sonner"
 import { PageWrapper } from "@/components/layout/PageWrapper"
 import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
@@ -41,11 +42,20 @@ export default function Relatorios() {
   const [ranking, setRanking] = useState<RankingVendedor[]>([])
   const [comparativo, setComparativo] = useState<ComparativoQuiosque[]>([])
   const [comissoes, setComissoes] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState("curva-abc")
+
+  useEffect(() => {
+    loadReport("curva-abc")
+  }, [])
 
   async function loadReport(tab: string) {
+    setActiveTab(tab)
     setLoading(true)
     try {
-      const params = { dataInicio, dataFim }
+      const params = {
+        dataInicio: `${dataInicio}T00:00:00.000Z`,
+        dataFim: `${dataFim}T23:59:59.999Z`,
+      }
       switch (tab) {
         case "curva-abc":
           setCurvaABC(await relatoriosService.getCurvaABC(params))
@@ -90,9 +100,12 @@ export default function Relatorios() {
           <Label className="text-xs">Até</Label>
           <Input type="date" className="w-40" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
         </div>
+        <Button size="sm" onClick={() => loadReport(activeTab)}>
+          Buscar
+        </Button>
       </div>
 
-      <Tabs defaultValue="curva-abc" onValueChange={(v) => loadReport(v)}>
+      <Tabs value={activeTab} onValueChange={(v) => loadReport(v)}>
         <TabsList className="flex-wrap">
           <TabsTrigger value="curva-abc">
             <BarChart3 className="h-3 w-3 mr-1" /> Curva ABC
@@ -132,7 +145,7 @@ export default function Relatorios() {
                     </TableRow>
                   ) : curvaABC.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Clique na aba para carregar</TableCell>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Sem dados para o período</TableCell>
                     </TableRow>
                   ) : (
                     curvaABC.map((item) => (

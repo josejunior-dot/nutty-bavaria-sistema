@@ -221,16 +221,3 @@ export async function receberPedido(id: string, empresaId: string) {
     return entrada
   })
 }
-
-export async function getSugestaoCompra(empresaId: string) {
-  const produtos = await prisma.$queryRaw<any[]>`
-    SELECT id, nome, codigo, unidade, estoque_atual::float as "estoqueAtual",
-           estoque_minimo::float as "estoqueMinimo",
-           (estoque_minimo - estoque_atual)::float as "sugestaoQuantidade"
-    FROM produtos
-    WHERE empresa_id = ${empresaId} AND ativo = true
-    AND estoque_minimo IS NOT NULL AND estoque_atual < estoque_minimo
-    ORDER BY (estoque_atual::float / NULLIF(estoque_minimo::float, 0)) ASC
-  `
-  return produtos
-}

@@ -7,7 +7,6 @@ import {
   criarPedidoHandler,
   listarPedidosHandler,
   receberPedidoHandler,
-  getSugestaoCompraHandler,
 } from '../controllers/estoque.controller.js'
 import { authenticate, requireRole } from '../middleware/auth.middleware.js'
 
@@ -19,5 +18,4 @@ export async function estoqueRoutes(app: FastifyInstance) {
   app.post('/pedidos', { preHandler: [requireRole('GERENTE', 'FRANQUEADOR')] }, criarPedidoHandler)
   app.get('/pedidos', { preHandler: [authenticate] }, listarPedidosHandler)
   app.post('/pedidos/:id/receber', { preHandler: [requireRole('GERENTE', 'FRANQUEADOR')] }, receberPedidoHandler)
-  app.get('/sugestao-compra', { preHandler: [authenticate] }, getSugestaoCompraHandler)
 }

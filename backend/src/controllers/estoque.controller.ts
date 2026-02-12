@@ -114,8 +114,3 @@ export async function receberPedidoHandler(request: FastifyRequest, reply: Fasti
     return reply.status(400).send({ message: err.message })
   }
 }
-
-export async function getSugestaoCompraHandler(request: FastifyRequest, reply: FastifyReply) {
-  const sugestoes = await estoqueService.getSugestaoCompra(request.user.empresaId)
-  return reply.send(sugestoes)
-}

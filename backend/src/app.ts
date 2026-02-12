@@ -13,6 +13,7 @@ import { estoqueRoutes } from './routes/estoque.routes.js'
 import { fiscalRoutes } from './routes/fiscal.routes.js'
 import { configuracoesRoutes } from './routes/configuracoes.routes.js'
 import { relatoriosRoutes } from './routes/relatorios.routes.js'
+import { sugestaoCompraRoutes } from './routes/sugestao-compra.routes.js'
 
 export async function buildApp() {
   const app = Fastify({
@@ -50,6 +51,7 @@ export async function buildApp() {
   await app.register(fiscalRoutes, { prefix: '/api/fiscal' })
   await app.register(configuracoesRoutes, { prefix: '/api/configuracoes' })
   await app.register(relatoriosRoutes, { prefix: '/api/relatorios' })
+  await app.register(sugestaoCompraRoutes, { prefix: '/api/sugestao-compra' })
 
   return app
 }

@@ -91,6 +91,7 @@ model Empresa {
   tabelasPreco      TabelaPreco[]
   shoppings         Shopping[]
   campanhasShopping CampanhaShopping[]
+  eventosSazonais   EventoSazonal[]
 
   @@map("empresas")
 }
@@ -225,20 +226,25 @@ model VendaPagamento {
 // ─── Estoque ──────────────────────────────────────────────
 
 model Produto {
-  id            String         @id @default(uuid())
-  nome          String
-  codigo        String         @unique
-  unidade       UnidadeProduto @default(UN)
-  precoVenda    Decimal        @map("preco_venda") @db.Decimal(12, 2)
-  precoCusto    Decimal?       @map("preco_custo") @db.Decimal(12, 2)
-  estoqueAtual  Decimal        @default(0) @map("estoque_atual") @db.Decimal(12, 3)
-  estoqueMinimo Decimal?       @default(0) @map("estoque_minimo") @db.Decimal(12, 3)
-  ativo         Boolean        @default(true)
-  empresaId     String         @map("empresa_id")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  id                String         @id @default(uuid())
+  nome              String
+  codigo            String         @unique
+  unidade           UnidadeProduto @default(UN)
+  precoVenda        Decimal        @map("preco_venda") @db.Decimal(12, 2)
+  precoCusto        Decimal?       @map("preco_custo") @db.Decimal(12, 2)
+  estoqueAtual      Decimal        @default(0) @map("estoque_atual") @db.Decimal(12, 3)
+  estoqueMinimo     Decimal?       @default(0) @map("estoque_minimo") @db.Decimal(12, 3)
+  leadTimeDias      Int?           @map("lead_time_dias")
+  loteMinimo        Int?           @map("lote_minimo")
+  coberturaDias     Int?           @map("cobertura_dias")
+  fornecedorPadraoId String?       @map("fornecedor_padrao_id")
+  ativo             Boolean        @default(true)
+  empresaId         String         @map("empresa_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
 
   empresa           Empresa            @relation(fields: [empresaId], references: [id])
+  fornecedorPadrao  Fornecedor?        @relation("ProdutoFornecedorPadrao", fields: [fornecedorPadraoId], references: [id])
   vendaItens        VendaItem[]
   entradaItens      EntradaItem[]
   saidaItens        SaidaItem[]
@@ -418,6 +424,7 @@ model Fornecedor {
   empresa        Empresa          @relation(fields: [empresaId], references: [id])
   entradas       EntradaEstoque[]
   pedidosCompra  PedidoCompra[]
+  produtosPadrao Produto[]        @relation("ProdutoFornecedorPadrao")
 
   @@map("fornecedores")
 }
@@ -476,4 +483,22 @@ model TabelaPrecoItem {
   produto     Produto     @relation(fields: [produtoId], references: [id])
 
   @@map("tabela_preco_itens")
+}
+
+// ─── Eventos Sazonais ───────────────────────────────────
+
+model EventoSazonal {
+  id            String   @id @default(uuid())
+  nome          String
+  dataInicio    DateTime @map("data_inicio")
+  dataFim       DateTime @map("data_fim")
+  multiplicador Decimal  @db.Decimal(4, 2)
+  recorrente    Boolean  @default(false)
+  empresaId     String   @map("empresa_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  empresa Empresa @relation(fields: [empresaId], references: [id])
+
+  @@map("eventos_sazonais")
 }

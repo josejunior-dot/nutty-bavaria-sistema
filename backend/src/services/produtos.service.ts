@@ -37,6 +37,10 @@ export async function criarProduto(data: {
   precoVenda: number
   precoCusto?: number
   estoqueMinimo?: number
+  leadTimeDias?: number
+  loteMinimo?: number
+  coberturaDias?: number
+  fornecedorPadraoId?: string
   empresaId: string
 }) {
   return prisma.produto.create({
@@ -48,6 +52,10 @@ export async function criarProduto(data: {
       precoCusto: data.precoCusto,
       estoqueMinimo: data.estoqueMinimo ?? 0,
       estoqueAtual: 0,
+      leadTimeDias: data.leadTimeDias,
+      loteMinimo: data.loteMinimo,
+      coberturaDias: data.coberturaDias,
+      fornecedorPadraoId: data.fornecedorPadraoId,
       empresaId: data.empresaId,
     },
   })

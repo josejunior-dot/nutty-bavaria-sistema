@@ -24,7 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import * as produtosService from "@/services/produtos.service"
-import type { Produto, PaginatedResponse } from "@/types"
+import * as configService from "@/services/configuracoes.service"
+import type { Produto, PaginatedResponse, Fornecedor } from "@/types"
 
 function fmt(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
@@ -38,6 +39,10 @@ const emptyForm = {
   precoCusto: "",
   estoqueAtual: "",
   estoqueMinimo: "",
+  leadTimeDias: "",
+  loteMinimo: "",
+  coberturaDias: "",
+  fornecedorPadraoId: "",
 }
 
 export default function Produtos() {
@@ -48,10 +53,15 @@ export default function Produtos() {
   const [showForm, setShowForm] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [fornecedores, setFornecedores] = useState<Fornecedor[]>([])
 
   useEffect(() => {
     loadProdutos()
   }, [page, busca])
+
+  useEffect(() => {
+    configService.listarFornecedores({ limit: 100 }).then(r => setFornecedores(r.data)).catch(() => {})
+  }, [])
 
   async function loadProdutos() {
     setLoading(true)
@@ -81,6 +91,10 @@ export default function Produtos() {
       precoCusto: p.precoCusto != null ? String(p.precoCusto) : "",
       estoqueAtual: String(p.estoqueAtual),
       estoqueMinimo: p.estoqueMinimo != null ? String(p.estoqueMinimo) : "",
+      leadTimeDias: p.leadTimeDias != null ? String(p.leadTimeDias) : "",
+      loteMinimo: p.loteMinimo != null ? String(p.loteMinimo) : "",
+      coberturaDias: p.coberturaDias != null ? String(p.coberturaDias) : "",
+      fornecedorPadraoId: p.fornecedorPadraoId ?? "",
     })
     setShowForm(true)
   }
@@ -94,6 +108,10 @@ export default function Produtos() {
       precoCusto: form.precoCusto ? parseFloat(form.precoCusto.replace(",", ".")) : null,
       estoqueAtual: parseInt(form.estoqueAtual) || 0,
       estoqueMinimo: form.estoqueMinimo ? parseInt(form.estoqueMinimo) : null,
+      leadTimeDias: form.leadTimeDias ? parseInt(form.leadTimeDias) : null,
+      loteMinimo: form.loteMinimo ? parseInt(form.loteMinimo) : null,
+      coberturaDias: form.coberturaDias ? parseInt(form.coberturaDias) : null,
+      fornecedorPadraoId: form.fornecedorPadraoId || null,
     }
 
     if (!payload.nome || !payload.codigo || isNaN(payload.precoVenda)) {
@@ -266,6 +284,31 @@ export default function Produtos() {
             <div>
               <Label>Estoque Mínimo</Label>
               <Input type="number" value={form.estoqueMinimo} onChange={(e) => setForm({ ...form, estoqueMinimo: e.target.value })} placeholder="Opcional" />
+            </div>
+            <div>
+              <Label>Lead Time (dias)</Label>
+              <Input type="number" value={form.leadTimeDias} onChange={(e) => setForm({ ...form, leadTimeDias: e.target.value })} placeholder="Ex: 7" />
+            </div>
+            <div>
+              <Label>Lote Mínimo</Label>
+              <Input type="number" value={form.loteMinimo} onChange={(e) => setForm({ ...form, loteMinimo: e.target.value })} placeholder="Ex: 10" />
+            </div>
+            <div>
+              <Label>Cobertura (dias)</Label>
+              <Input type="number" value={form.coberturaDias} onChange={(e) => setForm({ ...form, coberturaDias: e.target.value })} placeholder="Ex: 30" />
+            </div>
+            <div>
+              <Label>Fornecedor Padrão</Label>
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                value={form.fornecedorPadraoId}
+                onChange={(e) => setForm({ ...form, fornecedorPadraoId: e.target.value })}
+              >
+                <option value="">Nenhum</option>
+                {fornecedores.map((f) => (
+                  <option key={f.id} value={f.id}>{f.nome}</option>
+                ))}
+              </select>
             </div>
           </div>
           <DialogFooter>

@@ -34,13 +34,22 @@ export async function criarProdutoHandler(request: FastifyRequest, reply: Fastif
     precoVenda: z.number().positive(),
     precoCusto: z.number().positive().optional(),
     estoqueMinimo: z.number().min(0).optional(),
+    leadTimeDias: z.number().int().min(0).optional().nullable(),
+    loteMinimo: z.number().int().min(1).optional().nullable(),
+    coberturaDias: z.number().int().min(1).optional().nullable(),
+    fornecedorPadraoId: z.string().uuid().optional().nullable(),
   })
   const parsed = schema.safeParse(request.body)
   if (!parsed.success) return reply.status(400).send({ message: 'Dados inválidos', errors: parsed.error.flatten() })
 
   try {
+    const { leadTimeDias, loteMinimo, coberturaDias, fornecedorPadraoId, ...rest } = parsed.data
     const produto = await produtosService.criarProduto({
-      ...parsed.data,
+      ...rest,
+      leadTimeDias: leadTimeDias ?? undefined,
+      loteMinimo: loteMinimo ?? undefined,
+      coberturaDias: coberturaDias ?? undefined,
+      fornecedorPadraoId: fornecedorPadraoId ?? undefined,
       empresaId: request.user.empresaId,
     })
     return reply.status(201).send(produto)

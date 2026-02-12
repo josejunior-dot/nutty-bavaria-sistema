@@ -67,8 +67,3 @@ export async function receberPedido(id: string): Promise<PedidoCompra> {
   )
   return data
 }
-
-export async function getSugestaoCompra(): Promise<any[]> {
-  const { data } = await api.get<any[]>("/estoque/sugestao-compra")
-  return data
-}

@@ -114,6 +114,10 @@ export interface Produto {
   precoCusto: number | null
   estoqueAtual: number
   estoqueMinimo: number | null
+  leadTimeDias: number | null
+  loteMinimo: number | null
+  coberturaDias: number | null
+  fornecedorPadraoId: string | null
   ativo: boolean
   empresaId: string
   createdAt: string
@@ -305,6 +309,48 @@ export interface ComissaoConfig {
   percentual: number
   ativo: boolean
   empresaId: string
+}
+
+// ─── Sugestão de Compra ─────────────────────────────
+
+export interface CenarioResult {
+  qtdSugerida: number
+  custoTotal: number
+  coberturaDias: number
+}
+
+export interface SugestaoCompraItem {
+  produtoId: string
+  nome: string
+  codigo: string
+  classeABC: 'A' | 'B' | 'C'
+  estoqueAtual: number
+  estoqueMinimo: number
+  demandaDiaria: number
+  demandaAjustada: number
+  leadTimeDias: number
+  safetyStock: number
+  pontoReposicao: number
+  gmroi: number
+  cenarios: {
+    conservador: CenarioResult
+    moderado: CenarioResult
+    agressivo: CenarioResult
+  }
+  fornecedor: string | null
+  eventoAtivo: string | null
+}
+
+export interface EventoSazonal {
+  id: string
+  nome: string
+  dataInicio: string
+  dataFim: string
+  multiplicador: number
+  recorrente: boolean
+  empresaId: string
+  createdAt: string
+  updatedAt: string
 }
 
 // ─── Relatórios ──────────────────────────────────────────

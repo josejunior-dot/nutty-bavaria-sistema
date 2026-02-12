@@ -4,6 +4,7 @@
   "outputDirectory": "frontend/dist",
   "framework": null,
   "routes": [
+    { "src": "/api/(.*)", "dest": "https://nutty-bavaria-sistema.onrender.com/api/$1" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]

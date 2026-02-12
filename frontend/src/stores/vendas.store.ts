@@ -24,6 +24,7 @@ export const useVendasStore = create<VendasState>()((set, get) => ({
 
   addItem: (produto) =>
     set((state) => {
+      const preco = Number(produto.precoVenda)
       const existing = state.carrinho.find(
         (item) => item.produtoId === produto.id
       )
@@ -47,9 +48,9 @@ export const useVendasStore = create<VendasState>()((set, get) => ({
             produtoId: produto.id,
             nome: produto.nome,
             codigo: produto.codigo,
-            precoUnitario: produto.precoVenda,
+            precoUnitario: preco,
             quantidade: 1,
-            subtotal: produto.precoVenda,
+            subtotal: preco,
           },
         ],
       }

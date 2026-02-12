@@ -21,8 +21,8 @@ export async function criarVenda(data: {
   const total = subtotal - desconto
 
   const totalPagamentos = data.pagamentos.reduce((acc, p) => acc + p.valor, 0)
-  if (Math.abs(totalPagamentos - total) > 0.01) {
-    throw new Error('Total dos pagamentos não confere com o valor da venda')
+  if (totalPagamentos < total - 0.01) {
+    throw new Error('Pagamento insuficiente')
   }
 
   return prisma.$transaction(async (tx) => {
@@ -38,7 +38,7 @@ export async function criarVenda(data: {
         numero,
         empresaId: data.empresaId,
         usuarioId: data.usuarioId,
-        terminalId: data.terminalId,
+        terminalId: movimento.terminalId,
         movimentoId: data.movimentoId,
         clienteId: data.clienteId,
         subtotal,

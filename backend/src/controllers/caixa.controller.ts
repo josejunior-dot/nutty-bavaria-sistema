@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply } from 'fastify'
 import { z } from 'zod'
 import * as caixaService from '../services/caixa.service.js'
+import { prisma } from '../lib/prisma.js'
 
 export async function getMovimentoAbertoHandler(request: FastifyRequest, reply: FastifyReply) {
   const schema = z.object({ terminalId: z.string().uuid().optional() })
@@ -124,4 +125,12 @@ export async function getResumoHandler(request: FastifyRequest, reply: FastifyRe
 
   const resumo = await caixaService.getResumo(parsed.data.id)
   return reply.send(resumo)
+}
+
+export async function listarTerminaisHandler(request: FastifyRequest, reply: FastifyReply) {
+  const terminais = await prisma.terminal.findMany({
+    where: { empresaId: request.user.empresaId, ativo: true },
+    orderBy: { nome: 'asc' },
+  })
+  return reply.send(terminais)
 }

@@ -50,7 +50,7 @@ export async function abrirCaixa(data: {
       },
     })
 
-    return prisma.movimento.findUniqueOrThrow({
+    return tx.movimento.findUniqueOrThrow({
       where: { id: movimento.id },
       include: {
         usuario: { select: { id: true, nome: true } },

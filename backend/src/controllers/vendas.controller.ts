@@ -22,6 +22,7 @@ const criarVendaSchema = z.object({
 export async function criarVendaHandler(request: FastifyRequest, reply: FastifyReply) {
   const parsed = criarVendaSchema.safeParse(request.body)
   if (!parsed.success) {
+    request.log.warn({ body: request.body, errors: parsed.error.flatten() }, 'Venda validation failed')
     return reply.status(400).send({ message: 'Dados inválidos', errors: parsed.error.flatten() })
   }
 

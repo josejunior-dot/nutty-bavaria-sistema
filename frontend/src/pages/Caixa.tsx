@@ -26,7 +26,8 @@ import {
 } from "@/components/ui/table"
 import { useCaixaStore } from "@/stores/caixa.store"
 import * as caixaService from "@/services/caixa.service"
-import type { Movimento } from "@/types"
+import { api } from "@/services/api"
+import type { Movimento, Terminal } from "@/types"
 
 function fmt(value: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value)
@@ -41,6 +42,8 @@ export default function Caixa() {
     useCaixaStore()
 
   const [historico, setHistorico] = useState<Movimento[]>([])
+  const [terminais, setTerminais] = useState<Terminal[]>([])
+  const [terminalId, setTerminalId] = useState("")
   const [showAbrir, setShowAbrir] = useState(false)
   const [showFechar, setShowFechar] = useState(false)
   const [showOperacao, setShowOperacao] = useState<"sangria" | "suprimento" | null>(null)
@@ -53,7 +56,18 @@ export default function Caixa() {
   useEffect(() => {
     loadCaixa()
     loadHistorico()
+    loadTerminais()
   }, [])
+
+  async function loadTerminais() {
+    try {
+      const { data } = await api.get<Terminal[]>("/caixa/terminais")
+      setTerminais(data)
+      if (data.length > 0) setTerminalId(data[0].id)
+    } catch {
+      // ignore
+    }
+  }
 
   async function loadCaixa() {
     setLoading(true)
@@ -86,8 +100,12 @@ export default function Caixa() {
       toast.error("Valor inválido")
       return
     }
+    if (!terminalId) {
+      toast.error("Selecione um terminal")
+      return
+    }
     try {
-      const mov = await caixaService.abrirCaixa({ terminalId: "default", valorAbertura: valor })
+      const mov = await caixaService.abrirCaixa({ terminalId, valorAbertura: valor })
       setMovimentoAtual(mov)
       setShowAbrir(false)
       setValorAbertura("")
@@ -325,6 +343,19 @@ export default function Caixa() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div>
+              <Label>Terminal</Label>
+              <select
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={terminalId}
+                onChange={(e) => setTerminalId(e.target.value)}
+              >
+                {terminais.length === 0 && <option value="">Nenhum terminal</option>}
+                {terminais.map((t) => (
+                  <option key={t.id} value={t.id}>{t.nome} ({t.codigo})</option>
+                ))}
+              </select>
+            </div>
+            <div>
               <Label>Valor de Abertura (R$)</Label>
               <Input
                 type="text"
@@ -338,7 +369,7 @@ export default function Caixa() {
             <DialogClose asChild>
               <Button variant="outline">Cancelar</Button>
             </DialogClose>
-            <Button onClick={handleAbrir}>Abrir</Button>
+            <Button onClick={handleAbrir} disabled={!terminalId}>Abrir</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

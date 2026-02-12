@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Package, ArrowDown, ArrowUp, ClipboardList } from "lucide-react"
+import { Package, ArrowDown, ArrowUp, ClipboardList, BarChart3 } from "lucide-react"
 import { toast } from "sonner"
 import { PageWrapper } from "@/components/layout/PageWrapper"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table"
 import * as estoqueService from "@/services/estoque.service"
 import * as produtosService from "@/services/produtos.service"
+import { Progress } from "@/components/ui/progress"
 import type { EntradaEstoque, SaidaEstoque, PedidoCompra, Produto } from "@/types"
 
 function fmt(value: number) {
@@ -31,6 +32,7 @@ export default function Estoque() {
   const [saidas, setSaidas] = useState<SaidaEstoque[]>([])
   const [pedidos, setPedidos] = useState<PedidoCompra[]>([])
   const [baixoEstoque, setBaixoEstoque] = useState<Produto[]>([])
+  const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,16 +42,18 @@ export default function Estoque() {
   async function loadAll() {
     setLoading(true)
     try {
-      const [e, s, p, b] = await Promise.all([
+      const [e, s, p, b, prods] = await Promise.all([
         estoqueService.listarEntradas({ limit: 20 }),
         estoqueService.listarSaidas({ limit: 20 }),
         estoqueService.listarPedidos({ limit: 20 }),
         produtosService.getProdutosEstoqueBaixo(),
+        produtosService.listarProdutos({ limit: 100 }),
       ])
       setEntradas(e.data)
       setSaidas(s.data)
       setPedidos(p.data)
       setBaixoEstoque(b)
+      setProdutos(prods.data)
     } catch {
       // ignore
     } finally {
@@ -98,8 +102,11 @@ export default function Estoque() {
         </Card>
       )}
 
-      <Tabs defaultValue="entradas">
+      <Tabs defaultValue="posicao">
         <TabsList>
+          <TabsTrigger value="posicao">
+            <BarChart3 className="h-3 w-3 mr-1" /> Posição
+          </TabsTrigger>
           <TabsTrigger value="entradas">
             <ArrowDown className="h-3 w-3 mr-1" /> Entradas
           </TabsTrigger>
@@ -110,6 +117,65 @@ export default function Estoque() {
             <ClipboardList className="h-3 w-3 mr-1" /> Pedidos
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="posicao">
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Código</TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead>Estoque Atual</TableHead>
+                    <TableHead>Estoque Mínimo</TableHead>
+                    <TableHead>Nível</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Carregando...</TableCell>
+                    </TableRow>
+                  ) : produtos.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum produto cadastrado</TableCell>
+                    </TableRow>
+                  ) : (
+                    produtos.map((p) => {
+                      const min = Number(p.estoqueMinimo ?? 0)
+                      const atual = Number(p.estoqueAtual)
+                      const pct = min > 0 ? Math.min((atual / min) * 100, 100) : 100
+                      const isBaixo = min > 0 && atual <= min
+                      return (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-mono text-sm">{p.codigo}</TableCell>
+                          <TableCell>{p.nome}</TableCell>
+                          <TableCell className={isBaixo ? "text-red-500 font-medium" : ""}>{atual}</TableCell>
+                          <TableCell className="text-muted-foreground">{min || "—"}</TableCell>
+                          <TableCell className="w-32">
+                            {min > 0 && (
+                              <Progress value={pct} className={`h-2 ${isBaixo ? "[&>div]:bg-red-500" : "[&>div]:bg-emerald-500"}`} />
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isBaixo ? (
+                              <Badge variant="destructive">Baixo</Badge>
+                            ) : p.ativo ? (
+                              <Badge variant="success">OK</Badge>
+                            ) : (
+                              <Badge variant="secondary">Inativo</Badge>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="entradas">
           <Card>

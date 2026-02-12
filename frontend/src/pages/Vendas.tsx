@@ -27,6 +27,7 @@ import { useVendasStore } from "@/stores/vendas.store"
 import { useCaixaStore } from "@/stores/caixa.store"
 import * as vendasService from "@/services/vendas.service"
 import * as produtosService from "@/services/produtos.service"
+import * as caixaService from "@/services/caixa.service"
 import type { Produto, TipoPagamento, Venda } from "@/types"
 
 function fmt(value: number) {
@@ -44,7 +45,7 @@ const TIPOS_PAGAMENTO: { tipo: TipoPagamento; label: string }[] = [
 export default function Vendas() {
   const { carrinho, desconto, addItem, removeItem, updateQuantidade, setDesconto, getSubtotal, getTotal, limparCarrinho } =
     useVendasStore()
-  const { movimentoAtual } = useCaixaStore()
+  const { movimentoAtual, setMovimentoAtual } = useCaixaStore()
 
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [busca, setBusca] = useState("")
@@ -58,6 +59,11 @@ export default function Vendas() {
 
   useEffect(() => {
     loadProdutos()
+    if (!movimentoAtual) {
+      caixaService.getMovimentoAberto().then((mov) => {
+        if (mov) setMovimentoAtual(mov)
+      }).catch(() => {})
+    }
   }, [])
 
   async function loadProdutos() {
@@ -91,12 +97,12 @@ export default function Vendas() {
   const restante = totalVenda - totalPagamentos
 
   function addPagamento() {
-    const valor = parseFloat(pagValor.replace(",", "."))
-    if (isNaN(valor) || valor <= 0) {
+    const raw = pagValor.trim() === "" ? restante : parseFloat(pagValor.replace(",", "."))
+    if (isNaN(raw) || raw <= 0) {
       toast.error("Valor inválido")
       return
     }
-    setPagamentos([...pagamentos, { tipo: pagTipo, valor }])
+    setPagamentos([...pagamentos, { tipo: pagTipo, valor: raw }])
     setPagValor("")
   }
 
@@ -322,14 +328,27 @@ export default function Vendas() {
               </select>
               <Input
                 className="w-24"
-                placeholder="Valor"
+                placeholder={restante > 0 ? restante.toFixed(2) : "Valor"}
                 value={pagValor}
                 onChange={(e) => setPagValor(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addPagamento()}
               />
               <Button size="sm" onClick={addPagamento}>
                 Add
               </Button>
             </div>
+            {pagamentos.length === 0 && restante > 0 && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  setPagamentos([{ tipo: pagTipo, valor: totalVenda }])
+                  setPagValor("")
+                }}
+              >
+                Pagar total em {TIPOS_PAGAMENTO.find((t) => t.tipo === pagTipo)?.label} — {fmt(totalVenda)}
+              </Button>
+            )}
 
             {pagamentos.length > 0 && (
               <div className="space-y-1 text-sm">

@@ -8,10 +8,12 @@ import {
   getMovimentoHandler,
   listarMovimentosHandler,
   getResumoHandler,
+  listarTerminaisHandler,
 } from '../controllers/caixa.controller.js'
 import { authenticate } from '../middleware/auth.middleware.js'
 
 export async function caixaRoutes(app: FastifyInstance) {
+  app.get('/terminais', { preHandler: [authenticate] }, listarTerminaisHandler)
   app.get('/aberto', { preHandler: [authenticate] }, getMovimentoAbertoHandler)
   app.post('/abrir', { preHandler: [authenticate] }, abrirCaixaHandler)
   app.get('/', { preHandler: [authenticate] }, listarMovimentosHandler)

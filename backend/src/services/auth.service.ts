@@ -12,11 +12,10 @@ export async function validateCredentials(email: string, password: string) {
     return null
   }
 
-  // TODO: reativar verificação de senha após período de testes
-  // const validPassword = await bcrypt.compare(password, user.senha)
-  // if (!validPassword) {
-  //   return null
-  // }
+  const validPassword = await bcrypt.compare(password, user.senha)
+  if (!validPassword) {
+    return null
+  }
 
   return user
 }

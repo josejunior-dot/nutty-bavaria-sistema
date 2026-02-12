@@ -84,9 +84,9 @@ export default function Estoque() {
     <PageWrapper title="Estoque" subtitle="Movimentações de estoque">
       {/* Low stock alert */}
       {baixoEstoque.length > 0 && (
-        <Card className="mb-4 border-amber-500/30">
+        <Card className="mb-4 border-amber-200 bg-amber-50/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-amber-500 flex items-center gap-2">
+            <CardTitle className="text-sm text-amber-700 flex items-center gap-2">
               <Package className="h-4 w-4" /> {baixoEstoque.length} produto(s) com estoque baixo
             </CardTitle>
           </CardHeader>
@@ -151,7 +151,7 @@ export default function Estoque() {
                         <TableRow key={p.id}>
                           <TableCell className="font-mono text-sm">{p.codigo}</TableCell>
                           <TableCell>{p.nome}</TableCell>
-                          <TableCell className={isBaixo ? "text-red-500 font-medium" : ""}>{atual}</TableCell>
+                          <TableCell className={isBaixo ? "text-red-600 font-medium" : ""}>{atual}</TableCell>
                           <TableCell className="text-muted-foreground">{min || "—"}</TableCell>
                           <TableCell className="w-32">
                             {min > 0 && (

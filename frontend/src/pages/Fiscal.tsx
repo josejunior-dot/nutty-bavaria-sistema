@@ -103,7 +103,7 @@ export default function Fiscal() {
                 <CardTitle className="text-sm text-muted-foreground">Emitidas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-500">{resumo.emitidas}</div>
+                <div className="text-2xl font-bold text-emerald-600">{resumo.emitidas}</div>
               </CardContent>
             </Card>
             <Card>
@@ -111,7 +111,7 @@ export default function Fiscal() {
                 <CardTitle className="text-sm text-muted-foreground">Pendentes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-amber-500">{resumo.pendentes}</div>
+                <div className="text-2xl font-bold text-amber-600">{resumo.pendentes}</div>
               </CardContent>
             </Card>
             <Card>
@@ -119,7 +119,7 @@ export default function Fiscal() {
                 <CardTitle className="text-sm text-muted-foreground">Rejeitadas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-500">{resumo.rejeitadas}</div>
+                <div className="text-2xl font-bold text-red-600">{resumo.rejeitadas}</div>
               </CardContent>
             </Card>
           </>

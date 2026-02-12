@@ -161,7 +161,7 @@ export default function Vendas() {
       }
     >
       {!movimentoAtual && (
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4 text-amber-500 text-sm">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-amber-700 text-sm">
           Caixa fechado. Abra o caixa na aba Caixa antes de registrar vendas.
         </div>
       )}
@@ -316,7 +316,7 @@ export default function Vendas() {
           <div className="space-y-4 py-2">
             <div className="flex gap-2">
               <select
-                className="flex-1 h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+                className="flex-1 h-9 rounded-md border border-input bg-white px-3 text-sm"
                 value={pagTipo}
                 onChange={(e) => setPagTipo(e.target.value as TipoPagamento)}
               >
@@ -365,7 +365,7 @@ export default function Vendas() {
                 </div>
                 <div className="flex justify-between font-bold">
                   <span>Restante</span>
-                  <span className={restante > 0.01 ? "text-red-500" : "text-emerald-500"}>
+                  <span className={restante > 0.01 ? "text-red-600" : "text-emerald-600"}>
                     {fmt(Math.max(restante, 0))}
                   </span>
                 </div>

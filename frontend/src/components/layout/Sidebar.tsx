@@ -15,7 +15,6 @@ import {
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/auth.store'
 import { useSidebarStore } from '@/stores/sidebar.store'
-import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import type { Module } from '@/types'
 
@@ -43,23 +42,28 @@ export function Sidebar() {
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          'flex flex-col h-screen bg-card border-r border-border transition-all duration-300',
+          'flex flex-col h-screen bg-[#4a2c17] transition-all duration-300',
           collapsed ? 'w-16' : 'w-64'
         )}
       >
         {/* Logo */}
         <div className="flex items-center h-16 px-4 gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground font-bold text-sm shrink-0">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-[#d4a056] to-[#c08b3f] text-[#3d2000] font-bold text-sm shrink-0 shadow-md">
             NB
           </div>
           {!collapsed && (
-            <span className="font-semibold text-sm text-foreground truncate">
-              Nutty Bavaria
-            </span>
+            <div className="flex flex-col">
+              <span className="font-bold text-sm text-[#f5efe6] leading-tight">
+                Nutty Bavaria
+              </span>
+              <span className="text-[10px] text-[#d4a056] leading-tight">
+                Sistema de Gestão
+              </span>
+            </div>
           )}
         </div>
 
-        <Separator />
+        <div className="mx-3 border-t border-white/10" />
 
         {/* Menu */}
         <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
@@ -70,10 +74,10 @@ export function Sidebar() {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                   isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    ? 'bg-white/15 text-[#d4a056] shadow-sm'
+                    : 'text-[#c4b49a] hover:bg-white/8 hover:text-[#f5efe6]'
                 )}
               >
                 <span className="shrink-0">{item.icon}</span>
@@ -94,7 +98,7 @@ export function Sidebar() {
           })}
         </nav>
 
-        <Separator />
+        <div className="mx-3 border-t border-white/10" />
 
         {/* Footer */}
         <div className="p-2 space-y-1">
@@ -104,10 +108,10 @@ export function Sidebar() {
                 <Link
                   to="/configuracoes"
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                     location.pathname === '/configuracoes'
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                      ? 'bg-white/15 text-[#d4a056] shadow-sm'
+                      : 'text-[#c4b49a] hover:bg-white/8 hover:text-[#f5efe6]'
                   )}
                 >
                   <Settings size={20} className="shrink-0" />
@@ -121,7 +125,7 @@ export function Sidebar() {
           {/* Collapse toggle */}
           <button
             onClick={toggle}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors w-full"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#c4b49a] hover:bg-white/8 hover:text-[#f5efe6] transition-all w-full"
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
             {!collapsed && <span>Recolher</span>}

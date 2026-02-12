@@ -40,9 +40,9 @@ export function Header() {
   }
 
   return (
-    <header className="flex items-center justify-between h-16 px-6 border-b border-border bg-card">
+    <header className="flex items-center justify-between h-14 px-6 border-b border-border bg-white shadow-sm">
       <div>
-        <h2 className="text-sm font-medium text-foreground">
+        <h2 className="text-sm font-semibold text-foreground">
           {user?.empresa.nome}
         </h2>
       </div>
@@ -53,8 +53,8 @@ export function Header() {
             <p className="text-sm font-medium text-foreground">{user?.nome}</p>
             <p className="text-xs text-muted-foreground">{roleLabels[user?.role ?? '']}</p>
           </div>
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback className="bg-[#7c3a12] text-white text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>

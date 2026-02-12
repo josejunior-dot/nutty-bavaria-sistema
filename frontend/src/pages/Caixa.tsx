@@ -216,7 +216,7 @@ export default function Caixa() {
               <CardTitle className="text-sm text-muted-foreground">Total Vendas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold text-emerald-500">{fmt(resumo.totalVendas)}</div>
+              <div className="text-xl font-bold text-emerald-600">{fmt(resumo.totalVendas)}</div>
             </CardContent>
           </Card>
           <Card>
@@ -225,9 +225,9 @@ export default function Caixa() {
             </CardHeader>
             <CardContent>
               <div className="text-sm">
-                <span className="text-red-500">-{fmt(resumo.totalSangrias)}</span>
+                <span className="text-red-600">-{fmt(resumo.totalSangrias)}</span>
                 {" / "}
-                <span className="text-emerald-500">+{fmt(resumo.totalSuprimentos)}</span>
+                <span className="text-emerald-600">+{fmt(resumo.totalSuprimentos)}</span>
               </div>
             </CardContent>
           </Card>
@@ -345,7 +345,7 @@ export default function Caixa() {
             <div>
               <Label>Terminal</Label>
               <select
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                className="flex h-9 w-full rounded-md border border-input bg-white px-3 text-sm"
                 value={terminalId}
                 onChange={(e) => setTerminalId(e.target.value)}
               >

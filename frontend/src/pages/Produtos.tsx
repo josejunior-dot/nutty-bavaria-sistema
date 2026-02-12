@@ -185,7 +185,7 @@ export default function Produtos() {
                     <TableCell>{p.nome}</TableCell>
                     <TableCell>{fmt(p.precoVenda)}</TableCell>
                     <TableCell>
-                      <span className={p.estoqueAtual <= (p.estoqueMinimo ?? 0) ? "text-red-500 font-medium" : ""}>
+                      <span className={p.estoqueAtual <= (p.estoqueMinimo ?? 0) ? "text-red-600 font-medium" : ""}>
                         {p.estoqueAtual}
                       </span>
                       {p.estoqueMinimo != null && (

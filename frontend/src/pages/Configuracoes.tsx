@@ -350,7 +350,7 @@ export default function Configuracoes() {
                 <div>
                   <Label>Perfil</Label>
                   <select
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                    className="flex h-9 w-full rounded-md border border-input bg-white px-3 text-sm"
                     value={form.role || "OPERADORA"}
                     onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
                   >

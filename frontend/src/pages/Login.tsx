@@ -44,20 +44,30 @@ export default function Login() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-primary text-primary-foreground font-bold text-xl mx-auto mb-4">
-            NB
+    <div
+      className="flex items-center justify-center min-h-screen p-4"
+      style={{
+        backgroundImage: 'url(/fundo_nutty.jpg)',
+        backgroundSize: '600px',
+        backgroundRepeat: 'repeat',
+      }}
+    >
+      {/* Overlay */}
+      <div className="fixed inset-0 bg-[#4a2c17]/30 backdrop-blur-[2px]" />
+
+      <Card className="w-full max-w-md relative z-10 shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-4 w-20 h-20 rounded-2xl bg-gradient-to-br from-[#7c3a12] to-[#4a2c17] flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-2xl tracking-tight">NB</span>
           </div>
-          <CardTitle className="text-2xl">Nutty Bavaria</CardTitle>
-          <CardDescription>Sistema de Gestão de Quiosques</CardDescription>
+          <CardTitle className="text-2xl text-[#3d2b1f]">Nutty Bavaria</CardTitle>
+          <CardDescription className="text-[#8b7355]">Sistema de Gestão de Quiosques</CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-lg border border-destructive/20">
+              <div className="p-3 text-sm text-red-700 bg-red-50 rounded-lg border border-red-200">
                 {error}
               </div>
             )}
@@ -69,6 +79,7 @@ export default function Login() {
                 type="email"
                 placeholder="seu@email.com"
                 autoComplete="email"
+                className="bg-white"
                 {...register('email')}
               />
               {errors.email && (
@@ -83,6 +94,7 @@ export default function Login() {
                 type="password"
                 placeholder="••••••"
                 autoComplete="current-password"
+                className="bg-white"
                 {...register('password')}
               />
               {errors.password && (
@@ -90,7 +102,7 @@ export default function Login() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loading}>
               {loading && <Loader2 className="animate-spin" />}
               Entrar
             </Button>

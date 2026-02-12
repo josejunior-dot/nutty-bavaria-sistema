@@ -43,7 +43,7 @@ export async function getVendasPorPeriodo(
            COUNT(*)::int as quantidade
     FROM vendas
     WHERE empresa_id = $1 AND status = 'CONCLUIDA'
-      AND created_at >= $3 AND created_at <= $4
+      AND created_at >= $3::timestamp AND created_at <= $4::timestamp
     GROUP BY TO_CHAR(created_at, $2)
     ORDER BY data ASC
   `, empresaId, fmt, params.dataInicio, params.dataFim)
